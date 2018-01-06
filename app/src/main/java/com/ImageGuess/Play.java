@@ -59,7 +59,7 @@ public class Play extends Activity {
     private int actionState;
     private ClientSocket clientSocket;
     private MyApp myApp;
-
+    private JSONObject endJSON;
     private static final float TOUCH_TOLERANCE = 4; // 在屏幕上移动4个像素后响应
     private static final float ERASE_WIDTH = 150;
     private static final int ACTION_DOWN = 10000;
@@ -220,7 +220,6 @@ public class Play extends Activity {
                 drawPaint.setStrokeWidth(ERASE_WIDTH);
                 paintColor = Color.WHITE;
                 drawPaint.setColor(paintColor);
-                //drawPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
                 actionMenu.close(true);
             }
         });
@@ -254,8 +253,31 @@ public class Play extends Activity {
         public void onFinish() { //时间到，换下一个玩家画画,销毁当前activity，新开activity
             timeShow.setText("时间到！");
             timeShow.setTextColor(Color.RED);
-            Intent intent=new Intent(Play.this,Join.class);
-            startActivity(intent);
+            if (myApp.getGameRound() > 0){
+                myApp.setGameRound(myApp.getGameRound() - 1);
+                Intent intent=new Intent(Play.this, Join.class);
+                startActivity(intent);
+            }else{
+                try{
+                    endJSON.put("infoState",4);  //infoState 4 represents destroy of room.
+                    endJSON.put("roomNumber",myApp.getRoomNumber());
+                    clientSocket.InfoToServer(endJSON.toString(), new ClientSocket.DataListener(){
+                        @Override
+                        public void transData() {
+                            try {
+                                String endMessage = clientSocket.getServerMessage();
+                                JSONObject message = new JSONObject(endMessage);
+                                System.out.println(message.get("serverInfo").toString());  //Print server's return information.
+                            }
+                            catch (JSONException e){
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+                } catch (JSONException e){
+                    e.printStackTrace();
+                }
+            }
             finish();
         }
     };

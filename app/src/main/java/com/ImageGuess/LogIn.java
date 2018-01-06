@@ -41,11 +41,11 @@ public class LogIn extends Activity {
             public void onClick(View v){
                 Intent intent = new Intent(LogIn.this,Welcome.class);
                 try{
+                    loginJSON.put("infoState",1);  //infoState 1 represents a login behaviour.
                     loginJSON.put("passWord",password.getText());
                     loginJSON.put("userName",userName.getText());
-                    loginJSON.put("infoState",1);  //infoState 1 represents a login behaviour.
                     myApp.setUserName(userName.getText().toString());
-                    clientSocket.InfoToServer(loginJSON.toString(),new ClientSocket.DataListener(){
+                    clientSocket.InfoToServer(loginJSON.toString(), new ClientSocket.DataListener(){
                         @Override
                         public void transData() {
                             try {

@@ -21,6 +21,7 @@ public class MyApp extends Application {
     private int server_port;
     private String room_number;
     private int current_drawer;
+    private int game_round;
 
     public void setUserName(String userName){
         this.user_name = userName;
@@ -65,6 +66,11 @@ public class MyApp extends Application {
     public void setCurrentDrawer(int currentDrawer){
         this.current_drawer = currentDrawer;
     }
+
+    public void setGameRound(int gameRound){
+        this.game_round = gameRound;
+    }
+
     public String getUserName(){
         return user_name;
     }
@@ -108,11 +114,17 @@ public class MyApp extends Application {
     public int getCurrentDrawer(){
         return current_drawer;
     }
+
+    public int getGameRound(){
+        return game_round;
+    }
+
     @Override
     public void onCreate(){
         super.onCreate();
         server_ip = "172.20.10.10";
         server_port = 8000;
         current_drawer = 0;
+        game_round = 5;
     }
 }
