@@ -2,11 +2,12 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:orientation="vertical"
               android:layout_width="match_parent"
-              android:layout_height="match_parent">
+              android:layout_height="match_parent"
+    android:background="@drawable/back1">
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="40dp"
         android:layout_gravity="center">
 
         <TextView
@@ -27,28 +28,31 @@
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
         android:layout_gravity="center">
 
         <ImageView
-            android:layout_marginLeft="5dp"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:src="@drawable/first"
+            android:layout_width="75dp"
+            android:layout_height="75dp"
+            android:background="@drawable/picture3"
+            android:id="@+id/host"
             android:scaleType="centerInside"/>
 
         <ImageView
-            android:layout_marginLeft="20dp"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:src="@drawable/first"
+            android:layout_marginLeft="15dp"
+            android:layout_width="75dp"
+            android:layout_height="75dp"
+            android:background="@drawable/picture3"
+            android:id="@+id/player"
             android:scaleType="centerInside"/>
 
         <ImageView
-            android:layout_marginLeft="20dp"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:src="@drawable/first"
+            android:layout_marginLeft="15dp"
+            android:layout_width="75dp"
+            android:layout_height="75dp"
+            android:background="@drawable/picture3"
             android:scaleType="centerInside"/>
+
     </LinearLayout>
 
     <LinearLayout
@@ -57,53 +61,55 @@
         android:layout_gravity="center">
 
         <TextView
+            android:id="@+id/hostName"
             android:text="玩家1"
-            android:layout_marginLeft="5dp"
-            android:layout_width="100dp"
+            android:layout_width="75dp"
             android:layout_height="wrap_content"
             android:gravity="center"/>
 
         <TextView
+            android:id="@+id/playerName"
             android:text="玩家2"
             android:layout_marginLeft="20dp"
-            android:layout_width="100dp"
+            android:layout_width="75dp"
             android:layout_height="wrap_content"
             android:gravity="center"/>
 
         <TextView
             android:text="玩家3"
             android:layout_marginLeft="20dp"
-            android:layout_width="100dp"
+            android:layout_width="75dp"
             android:layout_height="wrap_content"
             android:gravity="center"/>
+
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginTop="50dp">
+        android:layout_marginTop="30dp"
+        android:layout_gravity="center">
 
         <ImageView
-            android:layout_marginLeft="5dp"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:src="@drawable/first"
+            android:layout_width="75dp"
+            android:layout_height="75dp"
+            android:background="@drawable/picture3"
             android:scaleType="centerInside"/>
 
         <ImageView
-            android:layout_marginLeft="20dp"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:src="@drawable/first"
+            android:layout_marginLeft="15dp"
+            android:layout_width="75dp"
+            android:layout_height="75dp"
+            android:background="@drawable/picture3"
             android:scaleType="centerInside"/>
 
         <ImageView
-            android:layout_marginLeft="20dp"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:src="@drawable/first"
+            android:layout_marginLeft="15dp"
+            android:layout_width="75dp"
+            android:layout_height="75dp"
+            android:background="@drawable/picture3"
             android:scaleType="centerInside"/>
+
     </LinearLayout>
 
     <LinearLayout
@@ -113,38 +119,24 @@
 
         <TextView
             android:text="玩家4"
-            android:layout_marginLeft="5dp"
-            android:layout_width="100dp"
+            android:layout_width="75dp"
             android:layout_height="wrap_content"
             android:gravity="center"/>
 
         <TextView
             android:text="玩家5"
             android:layout_marginLeft="20dp"
-            android:layout_width="100dp"
+            android:layout_width="75dp"
             android:layout_height="wrap_content"
             android:gravity="center"/>
 
         <TextView
             android:text="玩家6"
             android:layout_marginLeft="20dp"
-            android:layout_width="100dp"
+            android:layout_width="75dp"
             android:layout_height="wrap_content"
             android:gravity="center"/>
-    </LinearLayout>
 
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginTop="40dp">
-
-        <Button
-            android:id="@+id/startGame"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="开始游戏"
-            android:textSize="15dp"/>
     </LinearLayout>
 
     <LinearLayout
@@ -154,11 +146,13 @@
         android:layout_marginTop="20dp">
 
         <Button
-            android:id="@+id/quitRoom"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="退出房间"
-            android:textSize="15dp"/>
+            android:id="@+id/startGame"
+            android:layout_width="100dp"
+            android:layout_height="50dp"
+            android:gravity="center"
+            android:text="开始游戏"
+            android:textSize="16dp"
+            android:scaleType="centerInside" />
     </LinearLayout>
 
 </LinearLayout>

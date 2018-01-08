@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <solid android:color="#E6E6FA" />  填充色，默认黑色
+    <corners android:radius="100dp" />
+    <padding android:left="10dp" android:top="10dp"
+             android:right="10dp" android:bottom="10dp" />
+    <gradient
+        android:startColor="#C1FFC1"
+        android:endColor="#F0FFF0"
+        android:angle="90">
+    </gradient>
+
+    <stroke android:width="2dp" android:color="#FFF8DC"></stroke>
+
+</shape>

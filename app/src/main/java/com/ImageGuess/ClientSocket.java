@@ -42,44 +42,44 @@ public class ClientSocket {
         Log.i(TAG, "IP address is: " + serverIP);
     }
 
+    //基于TCP的对服务器通信
     public void InfoToServer(String sendMessage,DataListener dataListener){
         TCPSocket tcpSocket = new TCPSocket(serverIP, serverPort, sendMessage,dataListener);
         new Thread(tcpSocket).start();
     }
 
+    //基于UDP的消息接收
     public void InfoReceiver(int portNumber, DataListener dataListener){
         udpReceiver = new UDPReceiver(portNumber, dataListener);
         new Thread(udpReceiver).start();
     }
 
+    //基于UDP的消息发送
     public void InfoSender(int portNumber, String ipAddress, String gameData){
         UDPSender udpSender = new UDPSender(portNumber, ipAddress, gameData);
         new Thread(udpSender).start();
     }
 
+    //消息回调接口
     public interface DataListener{
         void transData() throws IOException;
     }
 
+    //获得服务器信息
     public  String getServerMessage(){
         synchronized (this){
             return  this.fromServer;
         }
     }
 
+    //获得接收数据
     public  String getGameData(){
         synchronized(this){
             return this.gameData;
         }
     }
 
-    public void shutDown(){
-        synchronized (this){
-            udpReceiver.exit = true;
-            Log.i(TAG, "shutDown: ");
-        }
-    }
-
+    //获取当前本机IP地址
     public static String getIp(final Context context) {
         String ip = null;
         ConnectivityManager conMan = (ConnectivityManager) context
@@ -133,6 +133,7 @@ public class ClientSocket {
         return null;
     }
 
+    //TCP socket类
     public class TCPSocket implements Runnable {
 
         private int serverPort;
@@ -165,6 +166,7 @@ public class ClientSocket {
         }
     }
 
+    //UDP 发送类
     public class UDPSender implements Runnable {
 
         private int portNumber;
@@ -181,11 +183,11 @@ public class ClientSocket {
         @Override
         public void run() {
             try{
-                rawData = new byte[1024];
+                rawData = new byte[4096];
                 DatagramSocket clientSocket = new DatagramSocket();
                 InetAddress IP = InetAddress.getByName(ipAddress);
                 try{
-                    rawData = gameData.getBytes("ASCII");
+                    rawData = gameData.getBytes("UTF-8");
                     DatagramPacket sendPacket = new DatagramPacket(rawData, rawData.length, IP, portNumber);
                     clientSocket.send(sendPacket);
                     clientSocket.close();
@@ -198,6 +200,7 @@ public class ClientSocket {
         }
     }
 
+    //UDP接收类
     public class UDPReceiver implements Runnable {
 
         private int portNumber;
@@ -218,17 +221,21 @@ public class ClientSocket {
                 Log.i(TAG, "Receiving......");
                 while (!exit) {
                     try {
-                        rawData = new byte[1024];
+                        rawData = new byte[4096];
                         DatagramPacket receivePacket = new DatagramPacket(rawData, rawData.length);
                         serverSocket.receive(receivePacket);
-                        gameData = new String(receivePacket.getData(), 0, receivePacket.getLength(), "ASCII");
+                        gameData = new String(receivePacket.getData(), 0, receivePacket.getLength(), "UTF-8");
+                        if (gameData .equals("close")){
+                            serverSocket.close();
+                            Log.i(TAG, "Socket closed.");
+                            break;
+                        }
                         dataListener.transData();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 }
-                serverSocket.close();
-                Log.i(TAG, "Socket closed.");
+
             } catch (SocketException s) {
                 s.printStackTrace();
             }

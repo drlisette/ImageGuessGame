@@ -1,7 +1,10 @@
 package com.ImageGuess;
 
 import android.app.Application;
-import android.support.annotation.VisibleForTesting;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * ImageGuess Game
@@ -9,6 +12,7 @@ import android.support.annotation.VisibleForTesting;
  * Created by Stanislas, Lisette, Faustine on 2017/12 in SJTU.
  */
 
+//存放应用全局变量
 public class MyApp extends Application {
     private String user_name;
     private int port_number;
@@ -16,12 +20,17 @@ public class MyApp extends Application {
     private int player_number;
     private String remote_ip;
     private int remote_port;
+    private String remote_name;
     private String room_state;
     private String server_ip;
     private int server_port;
     private String room_number;
     private int current_drawer;
     private int game_round;
+    private int current_index;
+    private int user_score;
+    private int remote_score;
+    private JSONArray words_data;
 
     public void setUserName(String userName){
         this.user_name = userName;
@@ -45,6 +54,10 @@ public class MyApp extends Application {
 
     public void setRemotePort(int remotePort){
         this.remote_port = remotePort;
+    }
+
+    public void setRemoteName(String remoteName){
+        this.remote_name = remoteName;
     }
 
     public void setRoomState(String roomState){
@@ -71,6 +84,21 @@ public class MyApp extends Application {
         this.game_round = gameRound;
     }
 
+    public void setWordsData(JSONArray wordsData){
+        this.words_data = wordsData;
+    }
+
+    public void setCurrentIndex(int currentWord){
+        this.current_index = currentWord;
+    }
+
+    public void setUserScore(int userScore){
+        this.user_score = userScore;
+    }
+
+    public void setRemoteScore(int remoteScore){
+        this.remote_score = remoteScore;
+    }
     public String getUserName(){
         return user_name;
     }
@@ -93,6 +121,10 @@ public class MyApp extends Application {
 
     public int getRemotePort(){
         return remote_port;
+    }
+
+    public String getRemoteName(){
+        return remote_name;
     }
 
     public String getRoomState(){
@@ -119,12 +151,34 @@ public class MyApp extends Application {
         return game_round;
     }
 
+    public JSONArray getWordsData(){
+        return words_data;
+    }
+
+    public int getCurrentIndex(){
+        return current_index;
+    }
+
+    public int getUserScore(){
+        return user_score;
+    }
+
+    public int getRemoteScore(){
+        return remote_score;
+    }
+
     @Override
     public void onCreate(){
         super.onCreate();
-        server_ip = "172.20.10.10";
+        //server_ip = "172.20.10.10";
+        server_ip = "192.168.43.24";
         server_port = 8000;
         current_drawer = 0;
         game_round = 5;
+        current_index = 0;
+        user_score = 0;
+        remote_score = 0;
+        remote_name = "undefine";
+        words_data = new JSONArray();
     }
 }

@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_gravity="center"
+        android:layout_marginTop="80dp"
+        android:layout_marginBottom="100dp"
+        android:background="@drawable/back2">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="120dp"
+            android:text="游戏结束"
+            android:textSize="25dp" />
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="10dp">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+                <ImageView
+                    android:id="@+id/logo1"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:background="@drawable/picture1"
+                    android:scaleType="centerInside"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/name1"
+                    android:layout_gravity="center"
+                    android:layout_marginLeft="10dp"
+                    android:text="name1"
+                    android:textSize="15dp"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/score1"
+                    android:text="20分"
+                    android:layout_gravity="center"
+                    android:layout_marginLeft="70dp"
+                    android:textSize="15dp"/>
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp">
+                <ImageView
+                    android:id="@+id/logo2"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:background="@drawable/picture2"
+                    android:scaleType="centerInside"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/name2"
+                    android:layout_gravity="center"
+                    android:layout_marginLeft="10dp"
+                    android:text="name2"
+                    android:textSize="15dp"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/score2"
+                    android:text="10分"
+                    android:layout_gravity="center"
+                    android:layout_marginLeft="70dp"
+                    android:textSize="15dp"/>
+
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="30dp">
+                <Button
+                    android:id="@+id/returnButton"
+                    android:layout_width="100dp"
+                    android:layout_height="50dp"
+                    android:layout_marginLeft="20dp"
+                    android:gravity="center"
+                    android:text="返回主菜单"
+                    android:textSize="14dp"
+                    android:scaleType="centerInside" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+</LinearLayout>

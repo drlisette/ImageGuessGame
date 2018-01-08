@@ -3,6 +3,7 @@ package com.ImageGuess;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -16,8 +17,6 @@ import android.widget.TextView;
 public class Welcome extends Activity {
     private Button createRoom;
     private Button joinRoom;
-    private Button settings;
-    private Button aboutUs;
     private TextView welcome;
     private MyApp myApp;
 
@@ -25,13 +24,17 @@ public class Welcome extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         myApp = (MyApp) getApplication();
+        myApp.setUserScore(0);
+        myApp.setRemoteScore(0);
+        myApp.setCurrentIndex(0);
+        myApp.setCurrentDrawer(0);
+        myApp.setGameRound(5);
+        myApp.setRemoteName("undefine");
         setContentView(R.layout.after_log_in);
         createRoom =(Button)findViewById(R.id.createRoom);
         joinRoom =(Button)findViewById(R.id.joinRoom);
-        settings=(Button)findViewById(R.id.settings);
-        aboutUs=(Button)findViewById(R.id.about);
         welcome=(TextView)findViewById(R.id.currentUserName);
-        String title = "欢迎"+myApp.getUserName();
+        String title = "欢迎 "+myApp.getUserName();
         welcome.setText(title);
 
         createRoom.setOnClickListener(new View.OnClickListener() {
@@ -49,21 +52,16 @@ public class Welcome extends Activity {
                 startActivity(intent);
             }
         });
+    }
 
-        settings.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(Welcome.this, Settings.class);
-                startActivity(intent);
-            }
-        });
-
-        aboutUs.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(Welcome.this, About.class);
-                startActivity(intent);
-            }
-        });
+    //屏蔽返回键
+    @Override
+    public boolean onKeyDown(int keycode, KeyEvent event){
+        switch(keycode){
+            case KeyEvent.KEYCODE_BACK:
+                return true;
+            default:
+                return false;
+        }
     }
 }

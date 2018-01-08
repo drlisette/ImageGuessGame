@@ -11,19 +11,30 @@ import android.graphics.Path;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.Button;
+import android.view.ViewGroup;
+import android.view.animation.Animation;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import java.util.ArrayList;
+
+import java.lang.ref.WeakReference;
+
 import com.oguzdev.circularfloatingactionmenu.library.FloatingActionButton;
 import com.oguzdev.circularfloatingactionmenu.library.FloatingActionMenu;
 import com.oguzdev.circularfloatingactionmenu.library.SubActionButton;
@@ -37,60 +48,142 @@ import static android.content.ContentValues.TAG;
  */
 
 public class Play extends Activity {
-    private TextView currentDrawer;
     private Paint drawPaint;
     private TextView currentWord;
     private TextView timeShow;
-    private TextView currentRoomNumber;
     private EditText answer;
     private LinearLayout paletteView;
-    private ArrayList<TextView> guesserList;
-    private ArrayList<TextView> scoreGuesserList;
-    private ArrayList<Integer> scoreNumList; //各玩家分数
-    private ArrayList<String> wordsUsed;
-
+    private TextView try1;
+    private TextView try2;
+    private ImageView player1;
+    private ImageView player2;
+    private View countdownLayout;
     private float posX, posY;
     private float paintWidth = 12;
     private int paintColor = Color.BLACK;
     private String localIP;
     private String remoteIP;
+    private String answerData;
+    private String rightAnswer;
     private int localPort;
     private int remotePort;
     private int actionState;
     private ClientSocket clientSocket;
     private MyApp myApp;
     private JSONObject endJSON;
+    private JSONObject answerJSON;
     private static final float TOUCH_TOLERANCE = 4; // 在屏幕上移动4个像素后响应
     private static final float ERASE_WIDTH = 150;
     private static final int ACTION_DOWN = 10000;
     private static final int ACTION_MOVE = 10001;
     private static final int ACTION_UP = 10002;
-    private static final String CREATE_ROOM="create_room";
-    private static final String CURRENT_DRAWER="current_drawer";
-    private static final String SCORE_LIST="score_list";
-    private static final String WORDS_USED="used_words";
+    private RelativeLayout answerFromOthers; //放置弹幕内容的父组件
+    private DanmuBean danmuBean;  //弹幕内容
+    private MyHandler handler;
+    private GameDataThread gameDataThread = new GameDataThread();
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.play);
-        Log.i(TAG,"onCreate");
+
+        //提示词显示，“到你画啦”
+        LayoutInflater inflater=getLayoutInflater();
+        countdownLayout=inflater.inflate(R.layout.countdown_before_play, null);
+        final TextView countdownSecond=(TextView) countdownLayout.findViewById(R.id.remainingSecondsBeforeStart);
+        CountDownTimer second=new CountDownTimer(3200,800) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                countdownSecond.setText(millisUntilFinished/800+"秒");
+                countdownSecond.setTextColor(Color.parseColor("#363636"));
+                Log.i(TAG,countdownSecond.getText().toString());
+            }
+
+            @Override
+            public void onFinish() {
+                countdownSecond.setText("到你画啦!");
+                countdownSecond.setTextColor(Color.parseColor("#F08080"));
+                this.cancel();
+                timer.start();
+            }
+        };
+
+        Toast newToast=new Toast(getApplicationContext());
+        countdownSecond.getBackground().setAlpha(150);
+        newToast.setView(countdownLayout);
+        newToast.setGravity(Gravity.CENTER,0,0);
+        newToast.setDuration(Toast.LENGTH_LONG);
+        newToast.show();
+        second.start();
+
         myApp=(MyApp)getApplication();
+        //根据个人信息设置头像，名字和得分
+        if (myApp.getPlayerState().equals("1005")){
+            try1=(TextView) findViewById(R.id.try1);
+            try2=(TextView) findViewById(R.id.try2);
+            player1 = (ImageView) findViewById(R.id.leftPlayer);
+            player2 = (ImageView) findViewById(R.id.rightPlayer);
+            try1.setBackgroundResource(R.drawable.scoretextview);
+            try2.setBackgroundResource(R.drawable.scoretextview_2);
+            player1.setBackgroundResource(R.drawable.picture1);
+            player2.setBackgroundResource(R.drawable.picture2);
+            try1.setText(Integer.toString(myApp.getUserScore()) + "分");
+            try2.setText(Integer.toString(myApp.getRemoteScore()) + "分");
+        }else{
+            try1=(TextView) findViewById(R.id.try2);
+            try2=(TextView) findViewById(R.id.try1);
+            player1 = (ImageView) findViewById(R.id.rightPlayer);
+            player2 = (ImageView) findViewById(R.id.leftPlayer);
+            try1.setBackgroundResource(R.drawable.scoretextview_2);
+            try2.setBackgroundResource(R.drawable.scoretextview);
+            player1.setBackgroundResource(R.drawable.picture2);
+            player2.setBackgroundResource(R.drawable.picture1);
+            try1.setText(Integer.toString(myApp.getUserScore()) + "分");
+            try2.setText(Integer.toString(myApp.getRemoteScore()) + "分");
+        }
+
+        //界面初始化
         currentWord = (TextView) findViewById(R.id.currentWord);
-        currentRoomNumber = (TextView) findViewById(R.id.currentRoomNumber);
-        currentRoomNumber.setText(this.getIntent().getStringExtra(CREATE_ROOM));
         timeShow = (TextView) findViewById(R.id.timer);
         paletteView = (LinearLayout) findViewById(R.id.paletteView);
         paletteView.addView(new GameView(this));
-        currentDrawer = (TextView) findViewById(R.id.playerNumber);
+        ViewGroup.LayoutParams paletteViewLp=paletteView.getLayoutParams();
+        int pixelHeight=ScreenUtils.getScreenHeight(this);
+        int cutHeight=ScreenUtils.dp2px(this,(float)250);
+        int pixelWidth=ScreenUtils.getScreenWidth(this);
+        int cutWidth=ScreenUtils.dp2px(this,(float)70);
+        paletteViewLp.height=pixelHeight-cutHeight;
+        paletteViewLp.width=pixelWidth-cutWidth;
+        paletteView.setLayoutParams(paletteViewLp);
 
-        currentWord.setText("apple");
+        //加入延时用于等待双方同步
+        try{
+            Thread.sleep(3000);
+        }catch(InterruptedException e){
+            e.printStackTrace();
+        }
+
+        //获取当前词语
+        answerFromOthers = (RelativeLayout) findViewById(R.id.danmu_container);
+        danmuBean = new DanmuBean();
+        handler = new MyHandler(this);
+        JSONObject wordJSON = new JSONObject();
+        JSONArray wordsData = myApp.getWordsData();
+        rightAnswer = new String();
+        try{
+            wordJSON = wordsData.getJSONObject(myApp.getCurrentIndex());
+            rightAnswer = wordJSON.get("Word").toString();
+        }catch(JSONException e){
+            e.printStackTrace();
+        }
+        currentWord.setText(rightAnswer);
         answer = (EditText) findViewById(R.id.answer);
         init();
         timer.start();
-
         clientSocket = new ClientSocket(this, myApp.getServerIP(), myApp.getServerPort());
+
+        //画板初始化
         ImageView menu_icon = new ImageView(this);
         Drawable menu_img = ContextCompat.getDrawable(this, R.drawable.icon_menu);
         menu_icon.setImageDrawable(menu_img);
@@ -146,13 +239,109 @@ public class Play extends Activity {
                 .setEndAngle(270)
                 .attachTo(actionButton).build();
 
-        init();
-
+        //获取IP地址和端口号
         localIP = clientSocket.getIp(this);
+        localPort=myApp.getPortNumber();
         remoteIP = myApp.getRemoteIP();
         remotePort = myApp.getRemotePort();
-        new Thread(new GameDataThread()).start();
 
+        //处理网络线程传来的消息，判断回答是否正确
+        final Handler answerHandler = new Handler(new Handler.Callback(){
+            public boolean handleMessage(Message msg){
+                int N = 0;
+                if (msg.what == 1){
+                    try{
+                        if (rightAnswer.equals(answerJSON.get("answer").toString())){
+                            timer.cancel();
+                            myApp.setRemoteScore(myApp.getRemoteScore() + 5);
+                            setContentView(R.layout.timeover);
+                            TextView InfoText = (TextView)findViewById(R.id.info);
+                            InfoText.setText("回答正确！");
+                            InfoText.setTextColor(Color.BLACK);
+                            TextView AnswerText = (TextView)findViewById(R.id.right_answer);
+                            AnswerText.setText("正确答案：" + rightAnswer);
+                            gameDataThread.exit = true;
+                            clientSocket.InfoSender(myApp.getRemotePort(), myApp.getRemoteIP(), "right");
+                            try{
+                                Thread.sleep(500);
+                            }catch(InterruptedException e){
+                                e.printStackTrace();
+                            }
+                            if (myApp.getGameRound() > 0){
+                                myApp.setGameRound(myApp.getGameRound() - 1);
+                                myApp.setCurrentIndex(myApp.getCurrentIndex() + 1);
+                                clientSocket.InfoSender(myApp.getRemotePort(), myApp.getRemoteIP(), "close");
+                                Intent intent=new Intent(Play.this, Join.class);
+                                startActivity(intent);
+                                finish();
+                            }else{
+                                try{
+                                    clientSocket.InfoSender(myApp.getRemotePort(), myApp.getRemoteIP(), "close");
+                                    endJSON = new JSONObject();
+                                    endJSON.put("infoState",4);  //infoState 4 represents destroy of room.
+                                    endJSON.put("roomNumber",myApp.getRoomNumber());
+                                    clientSocket.InfoToServer(endJSON.toString(), new ClientSocket.DataListener(){
+                                        @Override
+                                        public void transData() {
+                                            try {
+                                                String endMessage = clientSocket.getServerMessage();
+                                                JSONObject message = new JSONObject(endMessage);
+                                                System.out.println(message.get("serverInfo").toString());  //Print server's return information.
+                                            }
+                                            catch (JSONException e){
+                                                e.printStackTrace();
+                                            }
+                                        }
+                                    });
+                                    Intent intent = new Intent(Play.this, GameFinish.class);
+                                    startActivity(intent);
+                                    finish();
+                                } catch (JSONException e){
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+                    }catch (JSONException e){
+                        e.printStackTrace();
+                    }
+                    if (danmuBean.getItems() != null){
+                        N = danmuBean.getItems().length;
+                    }
+                    for (int i = 0; i < N; i++) {
+                        handler.obtainMessage(1, i, 0).sendToTarget();
+                    }
+                }
+                return false;
+            }
+        });
+
+        clientSocket.InfoReceiver(localPort, new ClientSocket.DataListener() {
+            @Override
+            public void transData() {
+                answerData = clientSocket.getGameData();
+                synchronized (this){
+                    try{
+                        answerJSON = new JSONObject(answerData);
+                        Log.i(TAG, "transData: " + answerData);
+                        if (answerJSON.get("answer") != null){
+                            Log.i(TAG, "Receive answer.");
+                            danmuBean.setItems(new String[]{answerJSON.get("answer").toString()});
+                            //接收消息传给handler，判断回答是否正确
+                            Message msg = answerHandler.obtainMessage();
+                            msg.what = 1;
+                            answerHandler.sendMessage(msg);
+                        }
+                    } catch (JSONException e){
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+
+        //传输游戏数据
+        new Thread(gameDataThread).start();
+
+        //颜色、粗细、笔擦按钮
         red_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -223,7 +412,7 @@ public class Play extends Activity {
                 actionMenu.close(true);
             }
         });
-        //
+
         width_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -243,22 +432,34 @@ public class Play extends Activity {
         });
     }
 
-    private CountDownTimer timer=new CountDownTimer(5000,1000) {
+    //游戏倒计时一分钟
+    private CountDownTimer timer=new CountDownTimer(60000,1000) {
         @Override
         public void onTick(long millisUntilFinished) {
             timeShow.setText(millisUntilFinished/1000+"秒");
         }
 
+        //时间到，换下一个玩家画画,销毁当前activity，新开activity
         @Override
-        public void onFinish() { //时间到，换下一个玩家画画,销毁当前activity，新开activity
-            timeShow.setText("时间到！");
-            timeShow.setTextColor(Color.RED);
+        public void onFinish() {
+            setContentView(R.layout.timeover);
+            TextView AnswerText = (TextView)findViewById(R.id.right_answer);
+            AnswerText.setText(rightAnswer);
+            gameDataThread.exit = true;
+            //根据游戏轮数跳转下一界面
             if (myApp.getGameRound() > 0){
                 myApp.setGameRound(myApp.getGameRound() - 1);
+                myApp.setCurrentIndex(myApp.getCurrentIndex() + 1);
+                clientSocket.InfoSender(myApp.getRemotePort(), myApp.getRemoteIP(), "close");
                 Intent intent=new Intent(Play.this, Join.class);
                 startActivity(intent);
+                finish();
             }else{
                 try{
+                    //游戏结束向服务器请求销毁房间
+                    timer.cancel();
+                    clientSocket.InfoSender(myApp.getRemotePort(), myApp.getRemoteIP(), "close");
+                    endJSON = new JSONObject();
                     endJSON.put("infoState",4);  //infoState 4 represents destroy of room.
                     endJSON.put("roomNumber",myApp.getRoomNumber());
                     clientSocket.InfoToServer(endJSON.toString(), new ClientSocket.DataListener(){
@@ -274,14 +475,17 @@ public class Play extends Activity {
                             }
                         }
                     });
+                    Intent intent = new Intent(Play.this, GameFinish.class);
+                    startActivity(intent);
+                    finish();
                 } catch (JSONException e){
                     e.printStackTrace();
                 }
             }
-            finish();
         }
     };
 
+    //画板初始化
     private void init() {
         drawPaint = new Paint();
         drawPaint.setColor(paintColor); // 设置颜色
@@ -293,6 +497,7 @@ public class Play extends Activity {
         drawPaint.setStrokeCap(Paint.Cap.ROUND); // 设置笔头样式
     }
 
+    //当前“画”界面
     public class GameView extends View {
         private Bitmap drawBitmap;
         private Canvas drawCanvas;
@@ -342,6 +547,7 @@ public class Play extends Activity {
             drawPath.reset();
         }
 
+        //监听不同触屏事件
         @Override
         public boolean onTouchEvent(MotionEvent event) {
             float x = event.getX();
@@ -366,27 +572,100 @@ public class Play extends Activity {
         }
     }
 
+    //游戏数据传输线程
     public class GameDataThread implements Runnable {
         private JSONObject gameData;
+        public boolean exit = false;
 
         @Override
         public void run() {
-            while (true) {
-                while (true) {
-                    gameData = new JSONObject();
-                    try {
-                        gameData.put("posX", posX);
-                        gameData.put("posY", posY);
-                        gameData.put("color", paintColor);
-                        gameData.put("width", paintWidth);
-                        gameData.put("actionState", actionState);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                    Log.i(TAG, gameData.toString());
-                    clientSocket.InfoSender(remotePort, remoteIP, gameData.toString());
+            while (!exit) {
+                gameData = new JSONObject();
+                try {
+                    gameData.put("posX", posX);
+                    gameData.put("posY", posY);
+                    gameData.put("color", paintColor);
+                    gameData.put("width", paintWidth);
+                    gameData.put("actionState", actionState);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                clientSocket.InfoSender(remotePort, remoteIP, gameData.toString());
+            }
+        }
+    }
+
+    //弹幕显示线程
+    private void showDanmu(String content, float textSize, int textColor) {
+        final TextView textView = new TextView(this);
+        textView.setTextSize(textSize);
+        textView.setText(content);
+        textView.setTextColor(textColor);
+        int leftMargin = answerFromOthers.getRight() - answerFromOthers.getLeft() - answerFromOthers.getPaddingLeft();
+        int verticalMargin = 0;
+        textView.setTag(verticalMargin);
+
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+        params.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+        params.topMargin = verticalMargin;
+        textView.setLayoutParams(params);
+        Animation anim = AnimationHelper.createTranslateAnim(this, leftMargin, -ScreenUtils.getScreenWidth(this));
+        anim.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
+        textView.startAnimation(anim);
+
+        answerFromOthers.addView(textView);
+    }
+
+    //弹幕的handler，需要在主线程中添加组件
+    private static class MyHandler extends Handler {
+        private WeakReference<Play> ref;
+
+        MyHandler(Play ac) {
+            ref = new WeakReference<>(ac);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+
+            if (msg.what == 1) {
+                Play ac = ref.get();
+                if (ac != null && ac.danmuBean != null) {
+                    int index = msg.arg1;
+                    String content = ac.danmuBean.getItems()[index];
+                    float textSize = (float) (ac.danmuBean.getMinTextSize() * (1 + Math.random() * ac.danmuBean.getRange()));
+                    int textColor = ac.danmuBean.getColor();
+
+                    ac.showDanmu(content, textSize, textColor);
+                    Log.i(TAG, content);
                 }
             }
+        }
+    }
+
+    //屏蔽返回键
+    @Override
+    public boolean onKeyDown(int keycode, KeyEvent event){
+        switch(keycode){
+            case KeyEvent.KEYCODE_BACK:
+                return true;
+            default:
+                return false;
         }
     }
 }

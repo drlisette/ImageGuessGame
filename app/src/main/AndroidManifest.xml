@@ -17,39 +17,48 @@
         android:theme="@style/AppTheme"
         android:hardwareAccelerated="false"
         android:largeHeap="true">
-        <activity android:name="com.ImageGuess.MainActivity">
+        <activity android:name="com.ImageGuess.MainActivity"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.ImageGuess.LogIn">
+        <activity android:name="com.ImageGuess.LogIn"
+            android:screenOrientation="portrait">
+        </activity>
+        <activity android:name="com.ImageGuess.Register"
+            android:screenOrientation="portrait">
 
         </activity>
-        <activity android:name="com.ImageGuess.Welcome">
+        <activity android:name="com.ImageGuess.Welcome"
+            android:screenOrientation="portrait">
 
         </activity>
-        <activity android:name="com.ImageGuess.RoomCreate">
+        <activity android:name="com.ImageGuess.RoomCreate"
+            android:screenOrientation="portrait">
 
         </activity>
-        <activity android:name="com.ImageGuess.RoomJoin">
+        <activity android:name="com.ImageGuess.RoomJoin"
+            android:screenOrientation="portrait">
 
         </activity>
-        <activity android:name="com.ImageGuess.Settings">
+        <activity android:name="com.ImageGuess.Play"
+            android:screenOrientation="portrait">
 
         </activity>
-        <activity android:name="com.ImageGuess.Play">
-
-        </activity>
-        <activity android:name="com.ImageGuess.About">
-
-        </activity>
-        <activity android:name="com.ImageGuess.RoomWait">
+        <activity android:name="com.ImageGuess.RoomWait"
+            android:screenOrientation="portrait">
 
         </activity>
 
-        <activity android:name="com.ImageGuess.Join">
+        <activity android:name="com.ImageGuess.Join"
+            android:screenOrientation="portrait">
+
+        </activity>
+        <activity android:name="com.ImageGuess.GameFinish"
+            android:screenOrientation="portrait">
 
         </activity>
     </application>
